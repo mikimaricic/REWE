@@ -1,17 +1,33 @@
 export class HomePage {
-  visit() {
-    cy.visit('https://shop.billa.at');
+  verifyTitle() {
+    cy.title().should('contain', 'BILLA');
   }
 
-  acceptCookies() {
-    cy.get('body').then(($body) => {
-      if ($body.find('button#onetrust-accept-btn-handler').length) {
-        cy.get('button#onetrust-accept-btn-handler').click();
-      }
-    });
+  verifyHeaderLinks() {
+    cy.get('[data-test="header-quick-links"]').should('be.visible');
   }
 
-  searchProduct(productName) {
-    cy.get('input[placeholder="Suche"]').type(`${productName}{enter}`);
+  verifyHeaderSearchField() {
+    cy.get('[data-test="header-search"]').should('be.visible');
+  }
+
+  typeSearchTerm(term) {
+    cy.get('[data-test="header-search"]').should('be.visible').type(term);
+    return this;
+  }
+
+  verifyQuickSearchResults() {
+    cy.get('[data-test="header-search"]').should('be.visible');
+  }
+
+  clickQuickSearchButton() {
+    cy.get('button[data-test="search-field-button-search"]')
+      .contains(/search/i)
+      .click();
+  }
+
+  navigateToCheckout() {
+    cy.wait(4000);
+    cy.get('[data-test="quick-link-cart"]').click();
   }
 }

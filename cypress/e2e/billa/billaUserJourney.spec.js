@@ -1,48 +1,76 @@
 /// <reference types="cypress" />
 
+import { ProductPage } from '../../pages/ProductPage';
+import { HomePage } from '../../pages/HomePage';
+import { SearchPage } from '../../pages/SearchPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+const homePage = new HomePage();
+const searchPage = new SearchPage();
+const productPage = new ProductPage();
+const cartPage = new CartPage();
+const checkoutPage = new CheckoutPage();
+const testData = require('../../fixtures/testData.json');
+
 describe('BILLA Shop - User Journey (POM Example)', () => {
   beforeEach(() => {
-    cy.visit('https://shop.billa.at');
+    cy.visit('/');
     cy.wait(1000);
     cy.acceptCookiesIfVisible();
+    cy.userLogin();
+    cy.emptyCart();
   });
 
   it('Verifies Home Page', () => {
-    cy.title().should('contain', 'BILLA');
-    cy.get('[data-test="header-quick-links"]').should('be.visible');
-    cy.get('[data-test="header-search"]').should('be.visible');
+    homePage.verifyTitle();
+    homePage.verifyHeaderLinks();
+    homePage.verifyHeaderSearchField();
   });
 
   it('Verifies Search Predict Feature', () => {
-    cy.get('[data-test="header-search"]').type('Roastbeef');
-    cy.get('[data-test="search-result-base-products"]').should('be.visible');
+    homePage.typeSearchTerm(testData.productName);
+    homePage.verifyQuickSearchResults();
   });
 
   it('Verifies Search Page', () => {
-    cy.get('[data-test="header-search"]').type('Roastbeef');
-    cy.get('button[data-test="search-field-button-search"]')
-      .contains(/search/i)
-      .should('be.visible')
-      .click();
-    cy.get('[data-test="ws-search-term"]')
-      .should('be.visible')
-      .and('contain.text', 'Suchergebnis für „Roastbeef“');
+    homePage.typeSearchTerm(testData.productName);
+    homePage.clickQuickSearchButton();
+    searchPage.verifySearchResults(testData.productName);
   });
 
-  it('Verifies Product Add In Basket', () => {
-    cy.get('[data-test="header-search"]').type('Roastbeef');
-    cy.get('button[data-test="search-field-button-search"]')
-      .contains(/search/i)
-      .should('be.visible')
-      .click();
-    cy.get('[data-test="ws-search-term"]')
-      .should('be.visible')
-      .and('contain.text', 'Suchergebnis für „Roastbeef“');
-    cy.get('[data-test="product-tile"]')
-      .first()
-      .should('be.visible')
-      .and('contain.text', 'Roastbeef')
-      .click();
-    cy.get('[data-test="product-detail-additional-collapsible"]').should('be.visible');
+  it('Verifies Selected Product Details', () => {
+    homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
+    searchPage.verifySearchResults(testData.productName);
+    searchPage.clickFirstSearchResultsItem(testData.productName);
+    productPage.verifyProductDetails();
+  });
+
+  it('Verifies Cart', () => {
+    homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
+    searchPage.verifySearchResults(testData.productName);
+    searchPage.clickFirstSearchResultsItem(testData.productName);
+    productPage.verifyProductDetails();
+  });
+
+  it.only('Verifies Payment', () => {
+    homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
+    searchPage.verifySearchResults(testData.productName);
+    searchPage.clickFirstSearchResultsItem(testData.productName);
+    productPage.verifyProductDetails();
+    productPage.addProductToCart();
+    homePage.navigateToCheckout();
+    checkoutPage
+      .verifyCheckoutSummary()
+      .selectCreditCardOption()
+      .fillCardDetails({
+        number: '5454545454545454',
+        name: 'Milovan Maricic',
+        cvc: '123',
+      })
+      .submitPayment()
+      .acceptTermsAndConditions()
+      .submitPayment();
+    checkoutPage.verifyPaymentFailedMessage();
   });
 });
