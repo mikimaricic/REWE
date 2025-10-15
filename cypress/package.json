@@ -1,0 +1,13 @@
+{
+  "name": "rewe",
+  "version": "1.0.0",
+  "description": "Cypress E2E tests for BILLA shop",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress open",
+    "test:headless": "cypress run"
+  },
+  "devDependencies": {
+    "cypress": "^14.5.4"
+  }
+}
