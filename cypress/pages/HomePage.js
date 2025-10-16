@@ -1,33 +1,51 @@
 export class HomePage {
+  // selectors
+  selectors = {
+    headerQuickLinks: '[data-test="header-quick-links"]',
+    headerSearchField: '[data-test="header-search"]',
+    quickSearchButton: 'button[data-test="search-field-button-search"]',
+    quickLinkCart: '[data-test="quick-link-cart"]',
+  };
+
+  texts = {
+    quickSearchButton: 'search',
+  };
+
+  // methods
   verifyTitle() {
     cy.title().should('contain', 'BILLA');
+    return this;
   }
 
   verifyHeaderLinks() {
-    cy.get('[data-test="header-quick-links"]').should('be.visible');
+    cy.get(this.selectors.headerQuickLinks).should('be.visible');
+    return this;
   }
 
   verifyHeaderSearchField() {
-    cy.get('[data-test="header-search"]').should('be.visible');
+    cy.get(this.selectors.headerSearchField).should('be.visible');
+    return this;
   }
 
   typeSearchTerm(term) {
-    cy.get('[data-test="header-search"]').should('be.visible').type(term);
+    cy.get(this.selectors.headerSearchField).should('be.visible').type(term);
     return this;
   }
 
   verifyQuickSearchResults() {
-    cy.get('[data-test="header-search"]').should('be.visible');
+    cy.get(this.selectors.headerSearchField).should('be.visible');
+    return this;
   }
 
   clickQuickSearchButton() {
-    cy.get('button[data-test="search-field-button-search"]')
-      .contains(/search/i)
+    cy.get(this.selectors.quickSearchButton)
+      .contains(new RegExp(this.texts.quickSearchButton, 'i'))
       .click();
+    return this;
   }
 
-  navigateToCheckout() {
-    cy.wait(4000);
-    cy.get('[data-test="quick-link-cart"]').click();
+  navigateQuickLinkToCheckout() {
+    cy.get(this.selectors.quickLinkCart).click();
+    return this;
   }
 }

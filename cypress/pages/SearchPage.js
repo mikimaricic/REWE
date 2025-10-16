@@ -1,18 +1,22 @@
 export class SearchPage {
-  verifySearchResults(searchResultTerm) {
-    cy.get('[data-test="ws-search-term"]')
-      .should('be.visible')
-      .and('contain.text', `Suchergebnis für „${searchResultTerm}“`);
+  // selectors
+  selectors = {
+    productTile: '[data-test="product-tile"]',
+    searchResultTitle: '[data-test="ws-search-term"]',
+  };
+
+  // methods
+  verifySearchResults(term) {
+    cy.get(this.selectors.searchResultTitle).should('be.visible').and('contain.text', term);
+    return this;
   }
 
-  clickFirstSearchResultsItem(searchResultTerm) {
-    cy.get('[data-test="product-tile"]')
+  clickFirstSearchResultsItem(searchTerm) {
+    cy.get(this.selectors.productTile)
+      .contains(new RegExp(searchTerm, 'i'))
       .first()
       .should('be.visible')
-      .then(($el) => {
-        const text = $el.text().toLowerCase();
-        expect(text).to.include(searchResultTerm.toLowerCase());
-        cy.wrap($el).click();
-      });
+      .click();
+    return this;
   }
 }

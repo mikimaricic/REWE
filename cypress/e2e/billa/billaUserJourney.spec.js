@@ -16,61 +16,58 @@ const testData = require('../../fixtures/testData.json');
 describe('BILLA Shop - User Journey (POM Example)', () => {
   beforeEach(() => {
     cy.visit('/');
+    // TODO: issue with waiting for cookie window
     cy.wait(1000);
     cy.acceptCookiesIfVisible();
-    cy.userLogin();
-    cy.emptyCart();
   });
 
-  it('Verifies Home Page', () => {
+  it('Home Page: shows correct title, header links, and search field', () => {
     homePage.verifyTitle();
     homePage.verifyHeaderLinks();
     homePage.verifyHeaderSearchField();
   });
 
-  it('Verifies Search Predict Feature', () => {
-    homePage.typeSearchTerm(testData.productName);
-    homePage.verifyQuickSearchResults();
+  it('Home Page: shows quick search suggestions for typed product', () => {
+    homePage.typeSearchTerm(testData.productName).verifyQuickSearchResults();
   });
 
-  it('Verifies Search Page', () => {
-    homePage.typeSearchTerm(testData.productName);
-    homePage.clickQuickSearchButton();
-    searchPage.verifySearchResults(testData.productName);
-  });
-
-  it('Verifies Selected Product Details', () => {
+  it('Search Page: displays search results matching typed product', () => {
     homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
     searchPage.verifySearchResults(testData.productName);
-    searchPage.clickFirstSearchResultsItem(testData.productName);
+  });
+
+  it('Product Page: displays additional product details for selected item', () => {
+    homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
+    searchPage
+      .verifySearchResults(testData.productName)
+      .clickFirstSearchResultsItem(testData.productName);
     productPage.verifyProductDetails();
   });
 
-  it('Verifies Cart', () => {
+  it('Cart Page: displays selected product after adding to cart', () => {
+    cy.userLogin();
+    cy.emptyCart();
     homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
-    searchPage.verifySearchResults(testData.productName);
-    searchPage.clickFirstSearchResultsItem(testData.productName);
-    productPage.verifyProductDetails();
+    searchPage
+      .verifySearchResults(testData.productName)
+      .clickFirstSearchResultsItem(testData.productName);
+    productPage.verifyProductDetails().addProductToCart();
+    homePage.navigateQuickLinkToCheckout();
+    cartPage.verifyCartSummary();
   });
 
-  it.only('Verifies Payment', () => {
+  it('Checkout Page: allows selecting credit card and shows payment iframe', () => {
+    cy.userLogin();
+    cy.emptyCart();
     homePage.typeSearchTerm(testData.productName).clickQuickSearchButton();
-    searchPage.verifySearchResults(testData.productName);
-    searchPage.clickFirstSearchResultsItem(testData.productName);
-    productPage.verifyProductDetails();
-    productPage.addProductToCart();
-    homePage.navigateToCheckout();
-    checkoutPage
-      .verifyCheckoutSummary()
-      .selectCreditCardOption()
-      .fillCardDetails({
-        number: '5454545454545454',
-        name: 'Milovan Maricic',
-        cvc: '123',
-      })
-      .submitPayment()
-      .acceptTermsAndConditions()
-      .submitPayment();
-    checkoutPage.verifyPaymentFailedMessage();
+    searchPage
+      .verifySearchResults(testData.productName)
+      .clickFirstSearchResultsItem(testData.productName);
+    productPage.verifyProductDetails().addProductToCart();
+    homePage.navigateQuickLinkToCheckout();
+    // TODO: issue with waiting
+    cy.wait(3000);
+    cartPage.verifyCartSummary().navigateToCheckout();
+    checkoutPage.selectCreditCardOption().finishPayment();
   });
 });

@@ -1,9 +1,18 @@
 export class ProductPage {
+  // selectors
+  selectors = {
+    additionalDetails: '[data-test="product-detail-additional-collapsible"]',
+    productActions: '[data-test="product-actions"]',
+  };
+
+  // methods
   verifyProductDetails() {
-    cy.get('[data-test="product-detail-additional-collapsible"]').should('be.visible');
+    cy.get(this.selectors.additionalDetails).should('be.visible');
+    return this;
   }
 
   addProductToCart() {
-    cy.get('[data-test="product-actions"]').first().should('be.visible').click();
+    cy.get(this.selectors.productActions).first().should('be.visible').click();
+    return this;
   }
 }
